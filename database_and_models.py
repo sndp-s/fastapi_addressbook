@@ -32,16 +32,18 @@ class Address(Base):
     __tablename__ = "addresses"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, index=True)
+    name = Column(String, unique=True, index=True)
     street = Column(String, index=True)
     city = Column(String)
     state = Column(String)
     country = Column(String)
-    latitude = Column(Float, index=True)
-    longitude = Column(Float, index=True)
+    latitude = Column(Float, nullable=False, index=True)
+    longitude = Column(Float, nullable=False, index=True)
 
 
 # Create database tables
-# NOTE In real application, I would handle db migration with alembic in this setup
-# And also keep models and database files separate
+# NOTE In the real world application, I would handle db migration with alembic
+# and also keep models and database files separate
+# Models have to be declared on the Base object first,
+# inorder to create tables in the database in the mext step
 Base.metadata.create_all(engine)
