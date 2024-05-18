@@ -54,3 +54,27 @@ def view_address(address_id: int, db: Session = Depends(db_utils.get_db)):
         data=schemas.Address.model_validate(
             saved_requested_address).model_dump()
     )
+
+
+@app.put("/address/{address_id}")
+def update_address(
+    address_id: int,
+    address_update: schemas.AddressUpdate,
+    db: Session = Depends(db_utils.get_db)
+):
+    """
+    Updates the given fields for the given address_id
+    """
+    updated_address = address_utils.update_address(db, address_id, address_update)
+
+    if not update_address:
+        return response_utils.create_error_response(
+            message="Address not found!",
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    return response_utils.create_response(
+        message="Address updated successfully!",
+        status_code=status.HTTP_200_OK,
+        data=schemas.Address.model_validate(updated_address).model_dump()
+    )

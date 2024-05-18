@@ -30,3 +30,19 @@ def get_address(
     saved_address_record = db.query(database_and_models.Address)\
         .filter(database_and_models.Address.id == address_id).first()
     return saved_address_record
+
+
+def update_address(
+    db: Session,
+    address_id: int,
+    address_update: schemas.AddressUpdate
+) -> schemas.Address:
+    """
+    Updates the given fields of the address belonging to the given address id
+    """
+    fields_to_update = {k: v for k, v in address_update.model_dump().items() if v}
+    db.query(database_and_models.Address)\
+        .filter(database_and_models.Address.id == address_id).update(fields_to_update)
+    db.commit()
+    return db.query(database_and_models.Address)\
+        .filter(database_and_models.Address.id == address_id).first()

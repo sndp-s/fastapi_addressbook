@@ -1,6 +1,7 @@
 """
 Schemas of the models used in the application
 """
+from typing import Optional
 from pydantic import BaseModel, ConfigDict
 
 
@@ -21,6 +22,19 @@ class AddressCreate(AddressBase):
     """
     Schema for Address creation api request body
     """
+
+
+class AddressUpdate(AddressBase):
+    """
+    Schema for Address updation api request body
+    """
+    name: Optional[str] = None
+    street: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
 
 
 class Address(AddressBase):
