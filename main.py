@@ -14,6 +14,7 @@ import schemas
 
 app = FastAPI()
 
+
 @app.get("/")
 def hello_world():
     """
@@ -21,8 +22,9 @@ def hello_world():
     """
     return "Hello world!"
 
+
 @app.post("/address/")
-def create_address(address: schemas.AddressCreate, db:Session=Depends(db_utils.get_db)):
+def create_address(address: schemas.AddressCreate, db: Session = Depends(db_utils.get_db)):
     """
     Endpoint to create new address
     """
@@ -34,8 +36,9 @@ def create_address(address: schemas.AddressCreate, db:Session=Depends(db_utils.g
         message="Address created successfully!"
     )
 
+
 @app.get("/address/{address_id}")
-def view_address(address_id: int, db:Session=Depends(db_utils.get_db)):
+def view_address(address_id: int, db: Session = Depends(db_utils.get_db)):
     """
     Returns the address mapped to the given id
     """
@@ -48,5 +51,6 @@ def view_address(address_id: int, db:Session=Depends(db_utils.get_db)):
     return response_utils.create_response(
         status_code=status.HTTP_200_OK,
         message="Address found!",
-        data=schemas.Address.model_validate(saved_requested_address).model_dump()
+        data=schemas.Address.model_validate(
+            saved_requested_address).model_dump()
     )

@@ -5,10 +5,11 @@ from sqlalchemy.orm import Session
 import database_and_models
 import schemas
 
+
 def create_address(
-        db: Session,
-        address: schemas.AddressCreate
-    ) -> schemas.Address:
+    db: Session,
+    address: schemas.AddressCreate
+) -> schemas.Address:
     """
     Stores the given address in the database
     """
@@ -27,5 +28,5 @@ def get_address(
     Returns saved address from the db against the given id
     """
     saved_address_record = db.query(database_and_models.Address)\
-                             .filter(database_and_models.Address.id==address_id).first()
+        .filter(database_and_models.Address.id == address_id).first()
     return saved_address_record

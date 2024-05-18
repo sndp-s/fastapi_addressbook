@@ -6,11 +6,12 @@ from typing import Any, Dict, Optional
 from fastapi import status
 from fastapi.responses import JSONResponse
 
+
 def create_response(
-        data: Optional[Dict[str, Any]] = None,
-        message: str = "Success",
-        status_code: int = status.HTTP_200_OK
-    ) -> JSONResponse:
+    data: Optional[Dict[str, Any]] = None,
+    message: str = "Success",
+    status_code: int = status.HTTP_200_OK
+) -> JSONResponse:
     """
     Standard success response
     """
@@ -23,11 +24,12 @@ def create_response(
         }
     )
 
+
 def create_error_response(
-        message: str = "Error",
-        status_code: int = status.HTTP_400_BAD_REQUEST,
-        data: Optional[Dict[str, Any]] = None
-    ) -> JSONResponse:
+    message: str = "Error",
+    status_code: int = status.HTTP_400_BAD_REQUEST,
+    data: Optional[Dict[str, Any]] = None
+) -> JSONResponse:
     """
     Standard error response
     """

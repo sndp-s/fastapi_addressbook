@@ -3,6 +3,7 @@ Schemas of the models used in the application
 """
 from pydantic import BaseModel, ConfigDict
 
+
 class AddressBase(BaseModel):
     """
     Base model of Address entity
@@ -15,10 +16,12 @@ class AddressBase(BaseModel):
     latitude: float
     longitude: float
 
+
 class AddressCreate(AddressBase):
     """
     Schema for Address creation api request body
     """
+
 
 class Address(AddressBase):
     """
