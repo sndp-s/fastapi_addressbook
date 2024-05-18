@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     author_name: str
     author_email: str
 
+    database_connection_url: str
+
     # Read the values from '.env' file
     model_config = SettingsConfigDict(env_file=".env")
 
