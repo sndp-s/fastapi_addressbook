@@ -9,3 +9,8 @@ __pycache__/
 
 # dev
 dev/
+
+# database
+*.db
+*.sqlite
+*.sqlite3
