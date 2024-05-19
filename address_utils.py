@@ -40,7 +40,8 @@ def update_address(
     """
     Updates the given fields of the address belonging to the given address id
     """
-    fields_to_update = {k: v for k, v in address_update.model_dump().items() if v}
+    fields_to_update = {k: v for k,
+                        v in address_update.model_dump().items() if v}
     db.query(database_and_models.Address)\
         .filter(database_and_models.Address.id == address_id).update(fields_to_update)
     db.commit()

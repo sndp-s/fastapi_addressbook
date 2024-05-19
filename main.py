@@ -65,7 +65,8 @@ def update_address(
     """
     Updates the given fields for the given address_id
     """
-    updated_address = address_utils.update_address(db, address_id, address_update)
+    updated_address = address_utils.update_address(
+        db, address_id, address_update)
 
     if not update_address:
         return response_utils.create_error_response(
