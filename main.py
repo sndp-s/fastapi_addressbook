@@ -94,3 +94,21 @@ def delete_address(
         status_code=status.HTTP_200_OK,
         message="Address deleted successfully!"
     )
+
+
+@app.get("/address/within-distance/")
+def get_addresses_within_distance(
+    distance: float,
+    latitude: float,
+    longitude: float,
+    db: Session = Depends(db_utils.get_db)
+):
+    """
+    Returns a list of address with the distance range of given cordiantes
+    """
+    addresses = address_utils.get_addresses_within(
+        db, distance, latitude, longitude)
+    return response_utils.create_response(
+        data=[schemas.Address.model_validate(address).model_dump()
+              for address in addresses]
+    )

@@ -44,3 +44,7 @@ class Address(AddressBase):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    street: Optional[str] = None
+    city: Optional[str] = None
+    state: Optional[str] = None
+    country: Optional[str] = None

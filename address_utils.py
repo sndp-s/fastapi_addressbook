@@ -1,7 +1,9 @@
 """
 Utilities related to address
 """
+from typing import List, Union
 from sqlalchemy.orm import Session
+from geopy.distance import distance as geo_distance
 import database_and_models
 import schemas
 
@@ -57,3 +59,29 @@ def delete_address(db: Session, address_id: int) -> None:
     if db_address:
         db.delete(db_address)
         db.commit()
+
+
+def get_addresses_within(
+    db: Session,
+    distance: float,
+    latitude: float,
+    longitude: float
+) -> Union[List[schemas.Address], List]:
+    """
+    Returns a list of Addresses lying within the given distance range of the given coordinates.
+
+    Note:
+    The current implementation is a naive one. In a real-world scenario,
+    it would be more efficient to first calculate the maximum and minimum
+    latitude and longitude bounds for the given distance. Then, we could 
+    prepare the query to filter addresses within these bounds, reducing 
+    the number of distance calculations needed.
+    """
+    user_location = (latitude, longitude)
+    addresses_within_distance = []
+    all_addresses = db.query(database_and_models.Address).all()
+    for address in all_addresses:
+        address_location = (address.latitude, address.longitude)
+        if geo_distance(user_location, address_location).km <= distance:
+            addresses_within_distance.append(address)
+    return addresses_within_distance
