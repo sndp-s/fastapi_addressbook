@@ -78,3 +78,18 @@ def update_address(
         status_code=status.HTTP_200_OK,
         data=schemas.Address.model_validate(updated_address).model_dump()
     )
+
+
+@app.delete("/address/{address_id}")
+def delete_address(
+    address_id: int,
+    db: Session = Depends(db_utils.get_db)
+):
+    """
+    Removes the address with given address_id 
+    """
+    address_utils.delete_address(db=db, address_id=address_id)
+    return response_utils.create_response(
+        status_code=status.HTTP_200_OK,
+        message="Address deleted successfully!"
+    )

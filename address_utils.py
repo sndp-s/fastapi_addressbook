@@ -46,3 +46,13 @@ def update_address(
     db.commit()
     return db.query(database_and_models.Address)\
         .filter(database_and_models.Address.id == address_id).first()
+
+
+def delete_address(db: Session, address_id: int) -> None:
+    """
+    Deletes the address corresponding to the given addredd_id
+    """
+    db_address = get_address(db, address_id)
+    if db_address:
+        db.delete(db_address)
+        db.commit()
