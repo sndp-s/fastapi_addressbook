@@ -10,7 +10,8 @@ from fastapi.responses import JSONResponse
 def create_response(
     data: Optional[Dict[str, Any]] = None,
     message: str = "Success",
-    status_code: int = status.HTTP_200_OK
+    status_code: int = status.HTTP_200_OK,
+    errors: Optional[Dict[str, Any]] = None
 ) -> JSONResponse:
     """
     Standard success response
@@ -20,7 +21,8 @@ def create_response(
         content={
             "status": "success",
             "message": message,
-            "data": data or {}
+            "data": data or {},
+            "errors": errors or {}
         }
     )
 
@@ -28,7 +30,8 @@ def create_response(
 def create_error_response(
     message: str = "Error",
     status_code: int = status.HTTP_400_BAD_REQUEST,
-    data: Optional[Dict[str, Any]] = None
+    data: Optional[Dict[str, Any]] = None,
+    errors: Optional[Dict[str, Any]] = None
 ) -> JSONResponse:
     """
     Standard error response
@@ -38,6 +41,7 @@ def create_error_response(
         content={
             "status": "error",
             "message": message,
-            "data": data or {}
+            "data": data or {},
+            "errors": errors or {}
         }
     )
