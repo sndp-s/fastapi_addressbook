@@ -4,7 +4,7 @@ Main app - starting point of the application
 All the APIs are located here as well
 """
 
-from fastapi import FastAPI, Depends, status
+from fastapi import FastAPI, Depends, status, Request
 from sqlalchemy.orm import Session
 import db_utils
 import address_utils
@@ -111,4 +111,15 @@ def get_addresses_within_distance(
     return response_utils.create_response(
         data=[schemas.Address.model_validate(address).model_dump()
               for address in addresses]
+    )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """
+    Global exception handler - returns response in the standard response structure
+    """
+    return response_utils.create_error_response(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        message="An unexpected error occured"
     )
