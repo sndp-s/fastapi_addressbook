@@ -36,11 +36,6 @@ def view_address(address_id: int, db: Session = Depends(db_utils.get_db)):
     Returns the address mapped to the given id
     """
     saved_requested_address = address_utils.get_address(db, address_id)
-    if not saved_requested_address:
-        return response_utils.create_error_response(
-            status_code=status.HTTP_404_NOT_FOUND,
-            message="Address not found"
-        )
     return response_utils.create_response(
         status_code=status.HTTP_200_OK,
         message="Address found!",

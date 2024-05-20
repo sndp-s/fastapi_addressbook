@@ -48,6 +48,11 @@ def get_address(
     """
     saved_address_record = db.query(database_and_models.Address)\
         .filter(database_and_models.Address.id == address_id).first()
+    if not saved_address_record:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Address not found"
+        )
     return saved_address_record
 
 
