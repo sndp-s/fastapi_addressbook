@@ -56,12 +56,6 @@ def update_address(
     updated_address = address_utils.update_address(
         db, address_id, address_update)
 
-    if not update_address:
-        return response_utils.create_error_response(
-            message="Address not found!",
-            status_code=status.HTTP_400_BAD_REQUEST
-        )
-
     return response_utils.create_response(
         message="Address updated successfully!",
         status_code=status.HTTP_200_OK,

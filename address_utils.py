@@ -64,13 +64,36 @@ def update_address(
     """
     Updates the given fields of the address belonging to the given address id
     """
-    fields_to_update = {k: v for k,
-                        v in address_update.model_dump().items() if v}
-    db.query(database_and_models.Address)\
-        .filter(database_and_models.Address.id == address_id).update(fields_to_update)
-    db.commit()
-    return db.query(database_and_models.Address)\
-        .filter(database_and_models.Address.id == address_id).first()
+    try:
+        # Extract non-empty fields from the update payload
+        fields_to_update = {k: v for k,
+                            v in address_update.model_dump().items() if v}
+
+        # Perform the update operation within a context manager
+        with db.begin():
+            # Update the address record
+            num_updated = db.query(database_and_models.Address)\
+                .filter(database_and_models.Address.id == address_id)\
+                .update(fields_to_update)
+
+            # If no record was updated, raise an HTTPException
+            if num_updated == 0:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail=f"No address found with ID: {address_id}"
+                )
+
+        # Retrieve the updated address after the transaction is committed
+        updated_address = db.query(database_and_models.Address)\
+            .filter(database_and_models.Address.id == address_id).first()
+
+        return updated_address
+
+    except IntegrityError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Cannot update address: Bad update data"
+        ) from exc
 
 
 def delete_address(db: Session, address_id: int) -> None:
