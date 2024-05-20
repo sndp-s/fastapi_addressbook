@@ -20,15 +20,23 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-4. Run the Application
+4. Create the '.env' file
+Create a file named .env in the root directory of your project and add the following initial values:
+```
+app_name="fastapi_addressbook_api"
+author_name="Sandeep Sharma"
+author_email="sandeeptech8@gmail.com"
+database_connection_url="sqlite:///addressbook.sqlite3"
+```
+
+5. Run the Application
 ```bash
 uvicorn main:app --reload
 ```
 
-5. Access the API Documentation
+6. Access the API Documentation
 Open your browser and go to http://127.0.0.1:8000/docs to access the Swagger UI for API documentation and testing.
 
 
 ## License
-
 This project is licensed under the [Project Name] License. For more details, see the [LICENSE](LICENSE) file.
