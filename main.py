@@ -5,6 +5,7 @@ All the APIs are located here as well
 """
 
 from fastapi import FastAPI, Depends, status, Request, HTTPException
+from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
 import db_utils
 import address_utils
@@ -125,6 +126,23 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     return response_utils.create_error_response(
         status_code=exc.status_code,
         message=str(exc.detail)
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """
+    Validation exception handler.
+
+    Intercepts all "RequestValidationError"s raised in the APIs due to validation errors,
+    prepares the response object with a 422 status code and detailed error messages.
+    """
+    errors = [schemas.ErrorDetail(
+        loc=err["loc"], msg=err["msg"], type=err["type"]).model_dump() for err in exc.errors()]
+    return response_utils.create_error_response(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        message="Validation Error",
+        errors=errors
     )
 
 

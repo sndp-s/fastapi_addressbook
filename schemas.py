@@ -1,7 +1,7 @@
 """
 Schemas of the models used in the application
 """
-from typing import Optional
+from typing import Optional, List, Union
 from pydantic import BaseModel, ConfigDict
 
 
@@ -48,3 +48,12 @@ class Address(AddressBase):
     city: Optional[str] = None
     state: Optional[str] = None
     country: Optional[str] = None
+
+
+class ErrorDetail(BaseModel):
+    """
+    Represents each error object in the errors list
+    """
+    loc: Union[List[str], List[int]]
+    msg: str
+    type: str
