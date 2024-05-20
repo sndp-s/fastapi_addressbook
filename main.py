@@ -16,14 +16,6 @@ import schemas
 app = FastAPI()
 
 
-@app.get("/")
-def hello_world():
-    """
-    hello world example handler
-    """
-    return "Hello world!"
-
-
 @app.post("/address/")
 def create_address(address: schemas.AddressCreate, db: Session = Depends(db_utils.get_db)):
     """
