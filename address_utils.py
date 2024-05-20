@@ -2,7 +2,9 @@
 Utilities related to address
 """
 from typing import List, Union
+from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from geopy.distance import distance as geo_distance
 import database_and_models
 import schemas
@@ -15,11 +17,26 @@ def create_address(
     """
     Stores the given address in the database
     """
-    address_record = database_and_models.Address(**address.model_dump())
-    db.add(address_record)
-    db.commit()
-    db.refresh(address_record)
-    return address_record
+    try:
+        with db.begin():
+            address_record = database_and_models.Address(
+                **address.model_dump())
+            db.add(address_record)
+            db.commit()
+            db.refresh(address_record)
+        return address_record
+    except IntegrityError as exc:
+        # Handle unique constraint violation
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Address with the same name already exists."
+        ) from exc
+    except SQLAlchemyError as exc:
+        # Handle other database errors
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while storing the address."
+        ) from exc
 
 
 def get_address(
