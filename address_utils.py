@@ -98,12 +98,19 @@ def update_address(
 
 def delete_address(db: Session, address_id: int) -> None:
     """
-    Deletes the address corresponding to the given addredd_id
+    Deletes the address corresponding to the given address_id
     """
+    # Check if the address exists before attempting to delete it
     db_address = get_address(db, address_id)
-    if db_address:
-        db.delete(db_address)
-        db.commit()
+    if not db_address:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Address with ID {address_id} not found"
+        )
+
+    # Delete the address if it exists
+    db.delete(db_address)
+    db.commit()
 
 
 def get_addresses_within(
