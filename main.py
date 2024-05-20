@@ -115,9 +115,9 @@ def get_addresses_within_distance(
 
 
 @app.exception_handler(Exception)
-async def global_exception_handler(request: Request, exc: Exception):
+async def unexpected_exceptions_handler(request: Request, exc: Exception):
     """
-    Global exception handler - returns response in the standard response structure
+    Unexpected exceptions handler - returns response in the standard response structure
     """
     return response_utils.create_error_response(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
