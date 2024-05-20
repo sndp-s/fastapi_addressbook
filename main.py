@@ -4,7 +4,7 @@ Main app - starting point of the application
 All the APIs are located here as well
 """
 
-from fastapi import FastAPI, Depends, status, Request
+from fastapi import FastAPI, Depends, status, Request, HTTPException
 from sqlalchemy.orm import Session
 import db_utils
 import address_utils
@@ -111,6 +111,20 @@ def get_addresses_within_distance(
     return response_utils.create_response(
         data=[schemas.Address.model_validate(address).model_dump()
               for address in addresses]
+    )
+
+
+@app.exception_handler(HTTPException)
+async def http_exception_handler(request: Request, exc: HTTPException):
+    """
+    Central exception handler
+
+    Intercepts all the "HTTPException"s raised in the APIs,
+    prepares the response object with appropriate status code and data
+    """
+    return response_utils.create_error_response(
+        status_code=exc.status_code,
+        message=str(exc.detail)
     )
 
 
