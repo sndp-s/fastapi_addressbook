@@ -20,12 +20,11 @@ def create_address(
     """
     logger.info('Creating new address: %s', address)
     try:
-        with db.begin():
-            address_record = database_and_models.Address(
-                **address.model_dump())
-            db.add(address_record)
-            db.commit()
-            db.refresh(address_record)
+        address_record = database_and_models.Address(
+            **address.model_dump())
+        db.add(address_record)
+        db.commit()
+        db.refresh(address_record)
         logger.info('New address created successfully: %s', address_record)
         return address_record
     except IntegrityError as exc:
