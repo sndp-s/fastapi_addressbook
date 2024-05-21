@@ -33,7 +33,7 @@ class Address(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, index=True)
-    street = Column(String, index=True)
+    street = Column(String)
     city = Column(String)
     state = Column(String)
     country = Column(String)
