@@ -138,8 +138,8 @@ def delete_address(db: Session, address_id: int) -> None:
         db_address = get_address(db, address_id)
 
         # Delete the address if it exists
-        with db.begin():
-            db.delete(db_address)
+        db.delete(db_address)
+        db.commit()
 
         logger.info('Address with ID: %s deleted successfully', address_id)
 
