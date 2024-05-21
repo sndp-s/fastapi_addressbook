@@ -111,8 +111,8 @@ def get_addresses_within_distance(
     logger.info('Addresses within distance retrieved successfully')
 
     return response_utils.create_response(
-        data=[schemas.Address.model_validate(address).model_dump()
-              for address in addresses]
+        data={'addresses': [schemas.Address.model_validate(address).model_dump()
+              for address in addresses]}
     )
 
 
