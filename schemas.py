@@ -1,8 +1,30 @@
 """
 Schemas of the models used in the application
 """
-from typing import Optional, List, Union
-from pydantic import BaseModel, ConfigDict, field_validator
+from typing import Optional, List, Union, Annotated
+from pydantic import BaseModel, ConfigDict, AfterValidator
+
+
+def validate_latitude(lat: float):
+    """
+    Latitude field validator
+    """
+    if lat is None or not isinstance(lat, (float, int)) or lat < -90 or lat > 90:
+        raise ValueError("latitude value must be between -90 and 90")
+    return lat
+
+
+def validate_longitude(lon: float):
+    """
+    Longitude field validator
+    """
+    if lon is None or not isinstance(lon, (float, int)) or lon < -180 or lon > 180:
+        raise ValueError("longitude value must be between -180 and 180")
+    return lon
+
+
+Latitude = Annotated[float, AfterValidator(validate_latitude)]
+Longitude = Annotated[float, AfterValidator(validate_longitude)]
 
 
 class AddressBase(BaseModel):
@@ -14,28 +36,8 @@ class AddressBase(BaseModel):
     city: str
     state: str
     country: str
-    latitude: float
-    longitude: float
-
-    @field_validator('latitude')
-    @classmethod
-    def latitude_validator(cls, lat: float):
-        """
-        Latitude field validator
-        """
-        if not isinstance(lat, float) or lat < -90 or lat > 90:
-            raise ValueError("latitude value must be between -90 and 90")
-        return lat
-
-    @field_validator('longitude')
-    @classmethod
-    def longitude_validator(cls, lon: float):
-        """
-        Longitude field validator
-        """
-        if not isinstance(lon, float) or lon < -180 or lon > 180:
-            raise ValueError("longitude value must be between -180 and 180")
-        return lon
+    latitude: Latitude
+    longitude: Longitude
 
 
 class AddressCreate(AddressBase):

@@ -81,8 +81,8 @@ def delete_address(
 @app.get("/address/within-distance/")
 def get_addresses_within_distance(
     distance: float,
-    latitude: float,
-    longitude: float,
+    latitude: schemas.Latitude,
+    longitude: schemas.Longitude,
     db: Session = Depends(db_utils.get_db)
 ):
     """
