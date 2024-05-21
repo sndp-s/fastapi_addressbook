@@ -14,3 +14,7 @@ dev/
 *.db
 *.sqlite
 *.sqlite3
+
+# logs
+*.log
+*.logs
