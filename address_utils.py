@@ -18,7 +18,7 @@ def create_address(
     """
     Stores the given address in the database
     """
-    logger.info('Creating new address with the following details: %s', address)
+    logger.info('Creating new address: %s', address)
     try:
         with db.begin():
             address_record = database_and_models.Address(
@@ -26,17 +26,17 @@ def create_address(
             db.add(address_record)
             db.commit()
             db.refresh(address_record)
-        logger.info('New address created')
+        logger.info('New address created successfully: %s', address_record)
         return address_record
     except IntegrityError as exc:
-        logger.error('Failed to create a new address %s', exc_info=exc)
+        logger.error('Integrity error while creating new address: %s', exc)
         # Handle unique constraint violation
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="Address with the same name already exists."
         ) from exc
     except SQLAlchemyError as exc:
-        logger.error('Failed to create a new address %s', exc_info=exc)
+        logger.error('SQLAlchemy error while creating new address: %s', exc)
         # Handle other database errors
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -51,18 +51,27 @@ def get_address(
     """
     Returns saved address from the db against the given id
     """
-    logger.info('Retrieving address with id: %s', address_id)
-    saved_address_record = db.query(database_and_models.Address)\
-        .filter(database_and_models.Address.id == address_id).first()
-    logger.info('Sddress with id: %s found', address_id)
-    if not saved_address_record:
-        logger.debug(
-            'Address with id: %s does not exists in the system', address_id)
+    try:
+        logger.info('Retrieving address with ID: %s', address_id)
+        saved_address_record = db.query(database_and_models.Address)\
+            .filter(database_and_models.Address.id == address_id).first()
+
+        if not saved_address_record:
+            logger.error('Address with ID: %s not found', address_id)
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Address not found"
+            )
+
+        logger.info('Address with ID: %s retrieved successfully', address_id)
+        return saved_address_record
+    except SQLAlchemyError as exc:
+        logger.exception(
+            'An unexpected database error occurred while retrieving address with ID: %s', address_id)
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Address not found"
-        )
-    return saved_address_record
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while retrieving the address."
+        ) from exc
 
 
 def update_address(
@@ -73,7 +82,7 @@ def update_address(
     """
     Updates the given fields of the address belonging to the given address id
     """
-    logger.info('Updating address with id: %s', address_id)
+    logger.info('Updating address with ID: %s', address_id)
     try:
         # Extract non-empty fields from the update payload
         fields_to_update = {k: v for k,
@@ -88,14 +97,14 @@ def update_address(
 
             # If no record was updated, raise an HTTPException
             if num_updated == 0:
-                logger.debug(
-                    'Address with id: %s does not exists in the system', address_id)
+                logger.warning(
+                    'Address with ID: %s does not exist in the system', address_id)
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail=f"No address found with ID: {address_id}"
                 )
 
-            logger.info('Address with id: %s updated', address_id)
+            logger.info('Address with ID: %s updated successfully', address_id)
 
         # Retrieve the updated address after the transaction is committed
         updated_address = db.query(database_and_models.Address)\
@@ -104,11 +113,18 @@ def update_address(
         return updated_address
 
     except IntegrityError as exc:
-        logger.debug(
-            'Bad data given to update address with id: %s', address_id)
+        logger.error(
+            'Integrity error while updating address with ID: %s', address_id)
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot update address: Bad update data"
+            detail="Cannot update address: Data integrity issue"
+        ) from exc
+    except SQLAlchemyError as exc:
+        logger.exception(
+            'An unexpected database error occurred while updating address with ID: %s', address_id)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while updating the address."
         ) from exc
 
 
@@ -116,19 +132,28 @@ def delete_address(db: Session, address_id: int) -> None:
     """
     Deletes the address corresponding to the given address_id
     """
-    logger.info('Deleting address with ID: %s', address_id)
-    # Check if the address exists before attempting to delete it
-    db_address = get_address(db, address_id)
-    if not db_address:
-        logger.debug('Address with ID: %s does not exists', address_id)
+    logger.info('Attempting to delete address with ID: %s', address_id)
+    try:
+        # Check if the address exists before attempting to delete it
+        db_address = get_address(db, address_id)
+
+        # Delete the address if it exists
+        with db.begin():
+            db.delete(db_address)
+
+        logger.info('Address with ID: %s deleted successfully', address_id)
+
+    except HTTPException as exc:
+        if exc.status_code == status.HTTP_404_NOT_FOUND:
+            logger.warning('Address with ID: %s does not exist', address_id)
+        raise
+    except SQLAlchemyError as exc:
+        logger.exception(
+            'An unexpected database error occurred while deleting address with ID: %s', address_id)
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Address with ID {address_id} not found"
-        )
-    logger.info('Address with ID: %s deleted successfully', address_id)
-    # Delete the address if it exists
-    db.delete(db_address)
-    db.commit()
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while deleting the address."
+        ) from exc
 
 
 def get_addresses_within(
@@ -148,13 +173,31 @@ def get_addresses_within(
     the number of distance calculations needed.
     """
     logger.info(
-        'Locating Addresses with %s KMs of (lat, long): (%s, %s)',
-        distance, latitude, longitude)
-    user_location = (latitude, longitude)
-    addresses_within_distance = []
-    all_addresses = db.query(database_and_models.Address).all()
-    for address in all_addresses:
-        address_location = (address.latitude, address.longitude)
-        if geo_distance(user_location, address_location).km <= distance:
-            addresses_within_distance.append(address)
-    return addresses_within_distance
+        'Locating Addresses within %s KMs of (lat, long): (%s, %s)',
+        distance, latitude, longitude
+    )
+
+    try:
+        user_location = (latitude, longitude)
+        addresses_within_distance = []
+        all_addresses = db.query(database_and_models.Address).all()
+        for address in all_addresses:
+            address_location = (address.latitude, address.longitude)
+            if geo_distance(user_location, address_location).km <= distance:
+                addresses_within_distance.append(address)
+
+        logger.info(
+            'Found %s addresses within %s KMs of (lat, long): (%s, %s)',
+            len(addresses_within_distance), distance, latitude, longitude
+        )
+        return addresses_within_distance
+
+    except SQLAlchemyError as exc:
+        logger.exception(
+            'An unexpected database error occurred while locating addresses within %s KMs of (lat, long): (%s, %s)',
+            distance, latitude, longitude
+        )
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An error occurred while locating the addresses."
+        ) from exc

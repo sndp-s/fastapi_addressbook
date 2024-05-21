@@ -1,9 +1,15 @@
 """
-Main app - starting point of the application
+Address Book API
 
-All the APIs are located here as well
+Author: Sandeep Sharma
+Author Email: sandeeptech8@gmail.com
+
+This file contains the main components of the FastAPI application for the Address Book API:
+
+app (FastAPI): Main application instance.
+APIs (functions): Endpoint definitions for CRUD operations on addresses.
+exception_handlers (functions): Centralized error handlers for API requests.
 """
-
 from fastapi import FastAPI, Depends, status, Request, HTTPException
 from fastapi.exceptions import RequestValidationError
 from sqlalchemy.orm import Session
@@ -11,7 +17,7 @@ import db_utils
 import address_utils
 import response_utils
 import schemas
-
+from logger import logger
 
 app = FastAPI()
 
@@ -21,7 +27,9 @@ def create_address(address: schemas.AddressCreate, db: Session = Depends(db_util
     """
     Endpoint to create new address
     """
+    logger.info('Received request to create address: %s', address)
     saved_address = address_utils.create_address(db, address)
+    logger.info('Address created successfully: %s', saved_address)
 
     return response_utils.create_response(
         status_code=status.HTTP_201_CREATED,
@@ -35,7 +43,10 @@ def view_address(address_id: int, db: Session = Depends(db_utils.get_db)):
     """
     Returns the address mapped to the given id
     """
+    logger.info('Received request to view address with ID: %s', address_id)
     saved_requested_address = address_utils.get_address(db, address_id)
+    logger.info('Address retrieved successfully: %s', saved_requested_address)
+
     return response_utils.create_response(
         status_code=status.HTTP_200_OK,
         message="Address found!",
@@ -53,8 +64,10 @@ def update_address(
     """
     Updates the given fields for the given address_id
     """
+    logger.info('Received request to update address with ID: %s', address_id)
     updated_address = address_utils.update_address(
         db, address_id, address_update)
+    logger.info('Address updated successfully: %s', updated_address)
 
     return response_utils.create_response(
         message="Address updated successfully!",
@@ -71,7 +84,10 @@ def delete_address(
     """
     Removes the address with given address_id 
     """
+    logger.info('Received request to delete address with ID: %s', address_id)
     address_utils.delete_address(db=db, address_id=address_id)
+    logger.info('Address with ID %s deleted successfully', address_id)
+
     return response_utils.create_response(
         status_code=status.HTTP_200_OK,
         message="Address deleted successfully!"
@@ -86,10 +102,14 @@ def get_addresses_within_distance(
     db: Session = Depends(db_utils.get_db)
 ):
     """
-    Returns a list of address with the distance range of given cordiantes
+    Returns a list of address with the distance range of given coordinates
     """
+    logger.info('Received request to get addresses within %s KM of (lat: %s, long: %s)',
+                distance, latitude, longitude)
     addresses = address_utils.get_addresses_within(
         db, distance, latitude, longitude)
+    logger.info('Addresses within distance retrieved successfully')
+
     return response_utils.create_response(
         data=[schemas.Address.model_validate(address).model_dump()
               for address in addresses]
@@ -104,6 +124,7 @@ async def http_exception_handler(request: Request, exc: HTTPException):
     Intercepts all the "HTTPException"s raised in the APIs,
     prepares the response object with appropriate status code and data
     """
+    logger.error('HTTPException: %s - %s', exc.status_code, exc.detail)
     return response_utils.create_error_response(
         status_code=exc.status_code,
         message=str(exc.detail)
@@ -118,6 +139,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
     Intercepts all "RequestValidationError"s raised in the APIs due to validation errors,
     prepares the response object with a 422 status code and detailed error messages.
     """
+    logger.error('RequestValidationError: %s', exc.errors())
     errors = [schemas.ErrorDetail(
         loc=err["loc"], msg=err["msg"], type=err["type"]).model_dump() for err in exc.errors()]
     return response_utils.create_error_response(
@@ -132,7 +154,8 @@ async def unexpected_exceptions_handler(request: Request, exc: Exception):
     """
     Unexpected exceptions handler - returns response in the standard response structure
     """
+    logger.exception('Unexpected exception: %s', exc)
     return response_utils.create_error_response(
         status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        message="An unexpected error occured"
+        message="An unexpected error occurred"
     )
