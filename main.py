@@ -38,6 +38,20 @@ def create_address(address: schemas.AddressCreate, db: Session = Depends(db_util
     )
 
 
+@app.get("/address/all/")
+def get_all_addresses(db: Session = Depends(db_utils.get_db)):
+    """
+    Returns all addresses in the DB
+    """
+    logger.info("Retreiving all addresses")
+    addresses = address_utils.get_all_addresses(db)
+
+    return response_utils.create_response(
+        data={'addresses': [schemas.Address.model_validate(address).model_dump()
+              for address in addresses]}
+    )
+
+
 @app.get("/address/{address_id}")
 def view_address(address_id: int, db: Session = Depends(db_utils.get_db)):
     """

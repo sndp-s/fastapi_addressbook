@@ -200,3 +200,23 @@ def get_addresses_within(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="An error occurred while locating the addresses."
         ) from exc
+
+
+def get_all_addresses(
+    db: Session,
+) -> Union[List[schemas.Address], List]:
+    """
+    Returns all of the saved addresses from the db
+    """
+    try:
+        logger.info('Retrieving all addresses int the db')
+        all_saved_address_records = db.query(database_and_models.Address).all()
+        logger.info('All addresses retrieved successfully')
+        return all_saved_address_records
+    except SQLAlchemyError as exc:
+        logger.exception(
+            'An unexpected database error occurred while retrieving all addresses')
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="An unexpected error occurred while retrieving all addresses."
+        ) from exc
