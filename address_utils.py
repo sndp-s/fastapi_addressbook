@@ -155,7 +155,7 @@ def delete_address(db: Session, address_id: int) -> None:
         ) from exc
 
 
-def get_addresses_within(
+def get_nearby_addresses(
     db: Session,
     distance: float,
     latitude: float,

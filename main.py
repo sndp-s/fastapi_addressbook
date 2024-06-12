@@ -108,21 +108,21 @@ def delete_address(
     )
 
 
-@app.get("/address/within-distance/")
-def get_addresses_within_distance(
+@app.get("/address/nearby/")
+def get_nearby_addresses(
     distance: float,
     latitude: schemas.Latitude,
     longitude: schemas.Longitude,
     db: Session = Depends(db_utils.get_db)
 ):
     """
-    Returns a list of address with the distance range of given coordinates
+    Returns a list of addresses within the specified distance range from the given coordinates.
     """
     logger.info('Received request to get addresses within %s KM of (lat: %s, long: %s)',
                 distance, latitude, longitude)
-    addresses = address_utils.get_addresses_within(
+    addresses = address_utils.get_nearby_addresses(
         db, distance, latitude, longitude)
-    logger.info('Addresses within distance retrieved successfully')
+    logger.info('Nearby addresses retrieved successfully')
 
     return response_utils.create_response(
         data={'addresses': [schemas.Address.model_validate(address).model_dump()
