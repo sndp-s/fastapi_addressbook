@@ -39,4 +39,4 @@ Open your browser and go to http://127.0.0.1:8000/docs to access the Swagger UI 
 
 
 ## License
-This project is licensed under the [Project Name] License. For more details, see the [LICENSE](LICENSE) file.
+This project is licensed under the fastapi_addressbook License. For more details, see the [LICENSE](LICENSE) file.
